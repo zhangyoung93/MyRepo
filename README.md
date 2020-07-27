@@ -1,2 +1,2 @@
-# MyRepo
-It's a repo for me to learn more about programming.
+# JavaTestDemo
+This is my project to learn java programming.

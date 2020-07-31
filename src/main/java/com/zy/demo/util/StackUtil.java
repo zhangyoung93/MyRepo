@@ -168,6 +168,108 @@ public class StackUtil<E> {
 
     /*****  通过链表实现链式栈----->end    *****/
 
+    /**
+     * 括号匹配问题：给定一个只包括'{'、'}'、'('、')'、'['、']'的字符串，判断字符串中左括号与相同类型的右括号是否匹配，且左括号以正确的顺序匹配。
+     * 时间复杂度：O(n) --遍历字符串中的字符。
+     * 空间复杂度：O(n) --创建栈对象存储字符，存储数据量与输入数据量线性相关。
+     * @param str 待处理包含括号的字符串。
+     * @return 满足条件正确匹配则返回true；否则返回false。例如"{[()]}"满足条件。
+     */
+    public static boolean bracketsMatch(String str){
+        //输入字符串校验
+        if(str == null || str.isEmpty() || str.length() % 2 != 0){
+            return false;
+        }
+        //创建栈对象
+        StackUtil<Character> stackUtil = new StackUtil<>();
+        //获取字符串长度
+        int strLen = str.length();
+        //遍历字符串
+        for(int i = 0 ; i < strLen ; i++){
+            char c = str.charAt(i);
+            //因为左括号要以正确顺序匹配，所以把左括号压栈
+            if(c == '{' || c == '[' || c == '('){
+                stackUtil.push(c);
+            }else{
+                //获取栈顶的左括号
+                Character top = stackUtil.pop();
+                //栈内没有元素，说明左括号未按照正确顺序匹配
+                if(top == null){
+                    return false;
+                }
+                //左括号按照正确顺序匹配，说明可匹配的左括号与右括号在字符串中是位置对称的。
+                if(top == '{' && c == '}' || top == '[' && c == ']' || top == '(' && c == ')'){
+                    continue;
+                }
+                return false;
+            }
+        }
+        //栈中左括号都被匹配，说明字符串满足括号匹配条件。
+        return stackUtil.size() == 0;
+    }
+
+
+    /**
+     * 浏览器前进后退问题。
+     * 时间复杂度：O(1)  --指令order的值是常数，栈的压栈与出栈复杂度都是O(1)。
+     * 空间复杂度：O(1)  --消耗有限的内存资源。
+     * @param order 指令。规定：order是非0整数，正数表示前进几页，负数表示后退几页。例如order=2表示前进2页；order=-3表示后退3页。
+     * @param back 后退栈，按照先后顺序存储可后退的网页，栈顶规定为当前浏览的网页ID。
+     * @param forward 前进栈，按照先后顺序存储可前进的网页。
+     * @return 当前浏览的网页ID，规定网页ID为正整数。如果处理失败则返回0。
+     */
+    public static int forwardOrBack(int order,StackUtil<Integer> back,StackUtil<Integer> forward){
+        //校验指令
+        if(order == 0){
+            return 0;
+        }
+        //校验可后退的网页ID数组，至少存储当前浏览网页ID
+        if(back == null || back.size() <= 1){
+            return 0;
+        }
+        //校验前进栈
+        if(forward == null){
+            return 0;
+        }
+        //当前浏览的网页ID
+        int currentId = 0;
+        //如果输入指令是正整数，则是前进操作。
+        if(order > 0){
+            //前进栈为空，不允许操作
+            if(forward.size() > 0){
+                //逐个前进
+                for(int i = 0 ; i < order ; i++){
+                    //先从前进栈把可前进的网页出栈，再入栈到后退栈，该网页变为可后退。
+                    Integer id = forward.pop();
+                    if(id != null){
+                        currentId = id;
+                        back.push(currentId);
+                    }else{
+                        //栈顶元素是空，直接退出循环，不浪费时间。
+                        break;
+                    }
+                }
+            }
+        }else{
+            //如果输入指令是负数，则是后退操作，逐个后退
+            for (int i = 0 ; i < Math.abs(order) ; i++){
+                //先从后退栈把当前网页出栈，再入栈到前进栈，该网页变为可前进。
+                Integer id = back.pop();
+                if(id != null){
+                    forward.push(id);
+                    //注意后退栈要取最新的栈顶元素作为当前浏览网页
+                    if(back.getPop() != null){
+                        currentId = back.getPop();
+                    }
+                }else{
+                    //栈顶元素是空，直接退出循环，不浪费时间。
+                    break;
+                }
+            }
+        }
+        return currentId;
+    }
+
 //    /*****  通过数组实现顺序栈----->start    *****/
 //
 //    //声明对象数组

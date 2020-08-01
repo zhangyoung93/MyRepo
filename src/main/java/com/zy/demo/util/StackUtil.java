@@ -150,6 +150,32 @@ public class StackUtil<E> {
     }
 
     /**
+     * 查找指定元素在栈中离栈顶最近的位置。规定栈顶的索引为0；
+     * @param e 元素
+     * @return 指定元素在栈中离栈顶最近的索引。如果指定元素不在栈中，则返回-1。
+     */
+    public int getIndex(E e){
+        //空栈校验
+        if(this.size() == 0){
+            return -1;
+        }
+        //索引计数器
+        int index = 0;
+        //获取栈顶元素
+        Node<E> node = this.first;
+        //从栈顶向栈底遍历
+        while(node != null){
+            //判断元素是否存在
+            if(e == node.e){
+                return index;
+            }
+            index++;
+            node = node.next;
+        }
+        return -1;
+    }
+
+    /**
      * 结点内部类
      */
     private static class Node<E>{

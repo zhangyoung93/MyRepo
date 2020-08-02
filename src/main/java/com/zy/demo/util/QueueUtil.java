@@ -11,136 +11,283 @@ import java.util.Arrays;
  */
 public class QueueUtil<E> {
 
-    /* **** 链式队列----->start **** */
+    /* **** 循环队列----->start **** */
 
-    //头结点
-    private Node<E> first;
-
-    //尾结点
-    private Node<E> last;
+    //队列元素
+    private Object[] objects;
 
     //队列元素个数
     private int size;
 
-    /**
-     * 无参构造方法
-     */
-    public QueueUtil(){
+    //队列初始化默认值
+    private static final Object[] DEFAULT_OBJECTS = {};
 
+    //队列初始化默认容量
+    private static final int DEFAULT_CAPACITY = 10;
+
+    //队头指针
+    private int head;
+
+    //队尾指针
+    private int tail;
+
+    //队列无参构造函数
+    public QueueUtil(){
+        this.objects = DEFAULT_OBJECTS;
     }
 
     /**
-     * 单向链表初始化头结点构造方法
+     * 队列初始化容量构造函数
+     * @param capacity 容量
      */
-    public QueueUtil(E e){
-        this.first = this.last = new Node<>(e,null);
-        this.size++;
+    public QueueUtil(int capacity){
+        //校验输入容量
+        if(capacity > 0){
+            this.objects = new Object[capacity];
+        }else if(capacity == 0){
+            this.objects = DEFAULT_OBJECTS;
+        }else{
+            throw new IllegalArgumentException("Illegal capacity=" + capacity);
+        }
     }
 
     /**
      * 获取队列元素个数
-     * @return 队列元素个数
      */
     public int size(){
         return this.size;
     }
 
     /**
-     * 按照从队头到队尾的顺序打印队列，结果通过"{}"包裹
+     * 打印队列
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("{");
-        Node<E> node = this.first;
-        while (node != null){
-            sb.append(node.e).append(",");
-            node = node.next;
+        return Arrays.toString(this.objects);
+    }
+
+    /**
+     * 数组扩容
+     * 时间复杂度：O(n) --数组扩容后要为元素重新分配索引
+     * 空间复杂度：O(n) --扩容会创建新数组对象，数组大小与输入数据线性相关。
+     */
+    private void expand(){
+        //满队列再添加元素需要扩容
+        if(this.size + 1 > this.objects.length){
+            //获取旧数组长度
+            int oldLen = this.objects.length;
+            //扩容后新数组长度
+            int newLen = oldLen >= DEFAULT_CAPACITY ? oldLen * 3/2 : DEFAULT_CAPACITY;
+            //校验新数组长度
+            if(newLen >= Integer.MAX_VALUE){
+                throw new IllegalArgumentException("the length of array is too large:"+newLen);
+            }
+            //扩容
+            this.objects = Arrays.copyOf(this.objects,newLen);
+            //旧数组索引转换到新队列
+            for(int i = 1 ; i <= this.size ; i++){
+                this.objects[i] = this.objects[(this.head+i) % oldLen];
+            }
+            //重置新的队头与队尾
+            this.head = 0;
+            this.tail = this.size;
+            this.objects[head] = null;
         }
-        if(sb.toString().endsWith(",")){
-            sb.deleteCharAt(sb.length()-1);
-        }
-        sb.append("}");
-        return sb.toString();
     }
 
     /**
      * 入队
-     * 时间复杂度：O(1) --链表添加结点
-     * 空间复杂度：O(1) --使用有限的内存资源
-     * @param e 入队元素
+     * 时间复杂度：如果需要扩容是O(n)；不需要扩容是O(1)。
+     * 空间复杂度：如果需要扩容是O(n)；不需要扩容是O(1)。
+     * @param e 元素
      * @return 入队成功返回true；否则返回false。
      */
     public boolean add(E e){
-        //空队列
-        if(this.size == 0){
-            this.first = this.last = new Node<>(e,null);
-        }else{
-            //队尾添加
-            this.last = this.last.next = new Node<>(e,null);
-        }
-        //队列元素计数
+        //是否扩容
+        expand();
+        //计算队尾指针
+        this.tail = (this.tail+1) % this.objects.length;
+        //队尾添加元素
+        this.objects[this.tail] = e;
+        //计数
         this.size++;
         return true;
     }
 
     /**
      * 出队
-     * 时间复杂度：O(1) --链表头即队头
-     * 空间复杂度：O(1) --使用有限的内存资源
+     * 时间复杂度：O(1) --根据数组索引获取出队元素，是对顺序队列的O(n)复杂度的优化。
+     * 空间复杂度：O(1) --使用有限的内存资源。
      * @return 出队元素
      */
+    @SuppressWarnings("unchecked")
     public E poll(){
         //空队列校验
         if(this.size == 0){
             return null;
         }
-        //链表头结点
-        Node<E> firstNode = this.first;
-        //更改链表头结点
-        this.first = firstNode.next;
-        //队列元素计数
+        //计数队头指针
+        this.head = (this.head+1) % this.objects.length;
+        //获取队头元素
+        E e = (E)this.objects[this.head];
+        //队头元素置空
+        this.objects[this.head] = null;
+        //计数
         this.size--;
-        return firstNode.e;
+        return e;
     }
 
     /**
-     * 获取出队元素
-     * 时间复杂度：O(1) --出队元素即链表头元素
-     * 空间复杂度：O(1) --使用有限的内存资源
-     * @return 出队元素
+     * 获取队头元素
+     * 时间复杂度：O(1) --根据数组索引获取。
+     * 空间复杂度：O(n) --使用有限的内存资源。
+     * @return
      */
+    @SuppressWarnings("unchecked")
     public E peek(){
         //空队列校验
         if(this.size == 0){
             return null;
         }
-        return this.first.e;
+        //队头元素
+        return (E)this.objects[(this.head+1) % this.objects.length];
     }
 
-    //结点内部类
-    private static class Node<E>{
-        //上个结点
-        Node<E> prev;
-        //结点数据域
-        E e;
-        //下个结点
-        Node<E> next;
+    /* **** 循环队列----->end **** */
 
-        //单向链表构造函数
-        Node(E e,Node<E> next){
-            this.e = e;
-            this.next = next;
-        }
 
-        //双向链表构造函数
-        Node(Node<E> prev,E e,Node<E> next){
-            this.prev = prev;
-            this.e = e;
-            this.next = next;
-        }
-    }
 
-    /* **** 链式队列----->end **** */
+
+//    /* **** 链式队列----->start **** */
+//
+//    //头结点
+//    private Node<E> first;
+//
+//    //尾结点
+//    private Node<E> last;
+//
+//    //队列元素个数
+//    private int size;
+//
+//    /**
+//     * 无参构造方法
+//     */
+//    public QueueUtil(){
+//
+//    }
+//
+//    /**
+//     * 单向链表初始化头结点构造方法
+//     */
+//    public QueueUtil(E e){
+//        this.first = this.last = new Node<>(e,null);
+//        this.size++;
+//    }
+//
+//    /**
+//     * 获取队列元素个数
+//     * @return 队列元素个数
+//     */
+//    public int size(){
+//        return this.size;
+//    }
+//
+//    /**
+//     * 按照从队头到队尾的顺序打印队列，结果通过"{}"包裹
+//     */
+//    @Override
+//    public String toString() {
+//        StringBuilder sb = new StringBuilder("{");
+//        Node<E> node = this.first;
+//        while (node != null){
+//            sb.append(node.e).append(",");
+//            node = node.next;
+//        }
+//        if(sb.toString().endsWith(",")){
+//            sb.deleteCharAt(sb.length()-1);
+//        }
+//        sb.append("}");
+//        return sb.toString();
+//    }
+//
+//    /**
+//     * 入队
+//     * 时间复杂度：O(1) --链表添加结点
+//     * 空间复杂度：O(1) --使用有限的内存资源
+//     * @param e 入队元素
+//     * @return 入队成功返回true；否则返回false。
+//     */
+//    public boolean add(E e){
+//        //空队列
+//        if(this.size == 0){
+//            this.first = this.last = new Node<>(e,null);
+//        }else{
+//            //队尾添加
+//            this.last = this.last.next = new Node<>(e,null);
+//        }
+//        //队列元素计数
+//        this.size++;
+//        return true;
+//    }
+//
+//    /**
+//     * 出队
+//     * 时间复杂度：O(1) --链表头即队头
+//     * 空间复杂度：O(1) --使用有限的内存资源
+//     * @return 出队元素
+//     */
+//    public E poll(){
+//        //空队列校验
+//        if(this.size == 0){
+//            return null;
+//        }
+//        //链表头结点
+//        Node<E> firstNode = this.first;
+//        //更改链表头结点
+//        this.first = firstNode.next;
+//        //队列元素计数
+//        this.size--;
+//        return firstNode.e;
+//    }
+//
+//    /**
+//     * 获取出队元素
+//     * 时间复杂度：O(1) --出队元素即链表头元素
+//     * 空间复杂度：O(1) --使用有限的内存资源
+//     * @return 出队元素
+//     */
+//    public E peek(){
+//        //空队列校验
+//        if(this.size == 0){
+//            return null;
+//        }
+//        return this.first.e;
+//    }
+//
+//    //结点内部类
+//    private static class Node<E>{
+//        //上个结点
+//        Node<E> prev;
+//        //结点数据域
+//        E e;
+//        //下个结点
+//        Node<E> next;
+//
+//        //单向链表构造函数
+//        Node(E e,Node<E> next){
+//            this.e = e;
+//            this.next = next;
+//        }
+//
+//        //双向链表构造函数
+//        Node(Node<E> prev,E e,Node<E> next){
+//            this.prev = prev;
+//            this.e = e;
+//            this.next = next;
+//        }
+//    }
+//
+//    /* **** 链式队列----->end **** */
 
 //    /* **** 顺序队列----->start **** */
 //

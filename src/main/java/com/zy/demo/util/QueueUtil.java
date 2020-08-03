@@ -153,6 +153,67 @@ public class QueueUtil<E> {
         return (E)this.objects[(this.head+1) % this.objects.length];
     }
 
+    /**
+     * 约瑟夫环：n个人围成一圈(编号从1到n)，从编号为start的人开始报数1，数到out的人出列，下一个人又从1开始报数，数到out的人又出列，直到n个人都出列。求解n个人出列的顺序。
+     * 时间复杂度：O(n²)  -- 嵌套while循环，不过遍历次数是越来越少的。
+     * 空间复杂度：O(n)  --创建循环队列、数组、数组缩容的空间复杂度都是O(n)
+     * @param n  --输入的人数
+     * @param start  --开始报数的人的编号
+     * @param out  --出列标记值，数到此标记值的人要出列。
+     * @return 出队顺序结果
+     */
+    public String josephus(int n,int start,int out){
+        //校验人数、标记值
+        if(n <= 0 || out <= 0){
+            return null;
+        }
+        //默认从第一个人开始报数
+        if(start <= 0){
+            start = 1;
+        }
+        //创建容量为n的循环队列
+        QueueUtil<Integer> queueUtil = new QueueUtil<>(n);
+        //将n个人按照编号顺序入队
+        for(int i = 0 ; i < n ; i++){
+            queueUtil.add(i+1);
+        }
+        //设置出队指针起始位置，循环队列队头指针是在索引=0处的，所以要-1。
+        queueUtil.head = start - 1;
+        //数组索引计数器
+        int index = 0;
+        //创建结果数组
+        int[] result = new int[n];
+        //循环出队，直到队列中无人
+        while(queueUtil.size > 0){
+            //每隔out-1人出队，即更改队头指针
+            queueUtil.head = (queueUtil.head + out) % queueUtil.objects.length;
+            //获取出队的人
+            Integer tmp = (Integer)queueUtil.objects[queueUtil.head];
+            //不为空则添加到结果数组中
+            if(tmp != null){
+                result[index] = tmp;
+                //数组索引计数
+                index++;
+            }
+            //出队后此位置置空
+            queueUtil.objects[queueUtil.head] = null;
+            //队列元素自减
+            queueUtil.size--;
+            //出队后重新整理队列，
+            for(int i = queueUtil.head ; i < queueUtil.size ; i++){
+                queueUtil.objects[i] = queueUtil.objects[i+1];
+            }
+            //剔除已出队的人，重新初始化新数组
+            queueUtil.objects = Arrays.copyOf(queueUtil.objects,queueUtil.size);
+            //剔除后，队头指针自减
+            queueUtil.head--;
+        }
+        //所有人都已出队后，队头指针归零。
+        queueUtil.head = 0;
+        //输出结果数组
+        return Arrays.toString(result);
+    }
+
     /* **** 循环队列----->end **** */
 
 

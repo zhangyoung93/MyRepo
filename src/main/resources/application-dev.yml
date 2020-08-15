@@ -1,0 +1,7 @@
+### development environment config ###
+server:
+  port: 9093
+
+
+demo:
+  env: dev

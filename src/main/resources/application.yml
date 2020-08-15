@@ -1,0 +1,7 @@
+### production environment config ###
+spring:
+  profiles:
+    active: dev
+
+server:
+  port: 9091

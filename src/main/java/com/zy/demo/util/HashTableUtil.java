@@ -12,6 +12,9 @@ public class HashTableUtil{
     /**
      * HashMap是数组+单向链表+红黑树的复合数据结构。
      *
+     * HashMap扩容(即rehash过程)需要重建一整套数组+单向链表+红黑树，非常影响迭代性能。
+     * 避免或减少rehash是维持HashMap高性能的关键因素。
+     *
      * HashMap使用直接地址法定义哈希函数。
      * 哈希函数f(key) = (capacity-1) & h(key)。
      * capacity：数组容量。

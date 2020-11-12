@@ -4,8 +4,21 @@ package com.zy.demo.design;
  * 简单工厂模式
  * @author zy
  */
-public class AnimalFactory {
+public class EasyFactory {
+    //测试
+    public static void main(String[] args){
+        Animal animal = AnimalFactory.getAnimal("dog");
+        System.out.println("animal="+animal);
+        if(animal != null){
+            animal.eat();
+        }
+    }
+}
 
+/**
+ * 生产动物类实例的工厂
+ */
+class AnimalFactory{
     /**
      * 公有静态方法生产派生类实例
      * @param name 派生类实例名称

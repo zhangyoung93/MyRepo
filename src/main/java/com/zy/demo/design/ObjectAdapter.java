@@ -7,8 +7,8 @@ package com.zy.demo.design;
  */
 public class ObjectAdapter {
     public static void main(String[] args){
-        Adapter adapter = new Adapter(new TwoHolePlug());
-        adapter.charge();
+        ThreeHoleSocket threeHoleSocket = new Adapter(new TwoHolePlug());
+        threeHoleSocket.charge();
     }
 }
 

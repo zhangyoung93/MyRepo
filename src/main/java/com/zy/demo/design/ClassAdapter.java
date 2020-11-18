@@ -5,6 +5,10 @@ package com.zy.demo.design;
  * @author zy
  */
 public class ClassAdapter {
+    public static void main(String[] args){
+        Target target = new AdapterClass();
+        target.targetMethod();
+    }
 }
 
 /**
